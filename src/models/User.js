@@ -1,3 +1,4 @@
+// src/models/User.js
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
@@ -6,6 +7,22 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "Name is required"],
+      trim: true,
+    },
+    username: {
+      type: String,
+      required: [true, "Username is required"],
+      unique: true,
+      trim: true,
+      lowercase: true,
+      minlength: [3, "Username must be at least 3 characters long"],
+      match: [
+        /^[a-zA-Z0-9_]+$/,
+        "Username can only contain letters, numbers, and underscores",
+      ],
+    },
+    displayName: {
+      type: String,
       trim: true,
     },
     email: {
@@ -43,5 +60,13 @@ userSchema.methods.correctPassword = async function (
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
 };
+
+// Set displayName to username if not provided
+userSchema.pre("save", function (next) {
+  if (!this.displayName) {
+    this.displayName = this.username;
+  }
+  next();
+});
 
 export default mongoose.model("User", userSchema);
