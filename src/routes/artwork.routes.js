@@ -1,32 +1,28 @@
-// src/routes/artwork.routes.js
 import express from "express";
-import { protect, restrictTo } from "../middleware/auth.js";
-import { upload } from "../middleware/upload.js";
 import {
-  getArtworks,
-  getArtwork,
   createArtwork,
-  updateArtwork,
+  getArtwork,
+  getAllArtworks, // Changed from getArtworks to match controller
+  addImagesToArtwork,
   deleteArtwork,
+  updateArtwork,
+  deleteArtworkImage,
+  uploadArtworkImages,
 } from "../controllers/artworkController.js";
 
 const router = express.Router();
 
-// Public routes
-router.get("/", getArtworks);
+// Get routes
+router.get("/", getAllArtworks); // Changed to match controller function name
 router.get("/:id", getArtwork);
 
-// Protected routes (need authentication)
-router.use(protect);
+// Create and update routes
+router.post("/", uploadArtworkImages, createArtwork);
+router.patch("/:id", updateArtwork);
+router.patch("/:id/images", uploadArtworkImages, addImagesToArtwork);
 
-// Admin only routes
-router.use(restrictTo("admin"));
-
-router.post("/", upload.array("images", 5), createArtwork);
-router.patch("/:id", upload.array("images", 5), updateArtwork);
+// Delete routes
 router.delete("/:id", deleteArtwork);
-
-// For categories
-router.get("/category/:category", getArtworks);
+router.delete("/:id/images/:imageId", deleteArtworkImage);
 
 export default router;
