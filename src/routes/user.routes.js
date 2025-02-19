@@ -1,6 +1,6 @@
 // src/routes/user.routes.js
 import express from "express";
-import { protect } from "../middleware/auth.js";
+import { protect } from "../middleware/authMiddleware.js";
 import {
   signup,
   login,
