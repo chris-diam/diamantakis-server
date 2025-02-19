@@ -40,7 +40,8 @@ const corsOptions = {
       "http://localhost:5174", // Alternative Vite port
       "http://localhost:3000", // React default port
       "https://diamantakis-server.onrender.com", // Production server
-      "https://diamantakis-gallery.netlify.app", // Frontend deployment (if applicable)
+      "https://diamantakis.netlify.app", // Frontend deployment - UPDATED
+      "https://diamantakis-gallery.netlify.app", // Previous frontend deployment
     ];
 
     // Allow requests with no origin (like mobile apps or curl requests)
