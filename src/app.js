@@ -8,6 +8,7 @@ import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
 import artworkRoutes from "./routes/artwork.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
 import errorHandler from "./middleware/errorHandler.js";
 import ApiError from "./utils/ApiError.js";
 
@@ -30,7 +31,46 @@ const limiter = rateLimit({
 });
 app.use("/api", limiter);
 
-// Body parser, reading data from body into req.body
+// CORS
+const corsOptions = {
+  origin: function (origin, callback) {
+    // List of allowed origins
+    const allowedOrigins = [
+      "http://localhost:5173", // Vite default port
+      "http://localhost:5174", // Alternative Vite port
+      "http://localhost:3000", // React default port
+      "https://diamantakis-server.onrender.com", // Production server
+      "https://diamantakis-gallery.netlify.app", // Frontend deployment (if applicable)
+    ];
+
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Origin",
+    "X-Requested-With",
+    "Accept",
+    "x-client-key",
+    "x-client-token",
+    "x-client-secret",
+    "Authorization",
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+
+// Special handling for Stripe webhook route
+app.use("/api/v1/payments/webhook", express.raw({ type: "application/json" }));
+
+// Body parser for all other routes
 app.use(express.json({ limit: "10kb" }));
 
 // Data sanitization against NoSQL query injection
@@ -39,12 +79,10 @@ app.use(mongoSanitize());
 // Data sanitization against XSS
 app.use(xss());
 
-// CORS
-app.use(cors());
-
 // Routes
 app.use("/api/v1/artworks", artworkRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/payments", paymentRoutes);
 
 // Handle undefined Routes
 app.use("*", (req, res, next) => {
